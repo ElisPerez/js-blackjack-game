@@ -5,28 +5,46 @@
  * 2S = Two of Spades
  */
 
-(() => {
+const myModule = (() => {
   'use strict';
   let deck = [];
-  const types = ['C', 'D', 'H', 'S'];
-  const specials = ['A', 'J', 'Q', 'K'];
+  const types = ['C', 'D', 'H', 'S'],
+    specials = ['A', 'J', 'Q', 'K'];
 
-  let playerPoints = 0,
-    computerPoints = 0;
+  let playersPoints = [];
 
   // HTML References
-  const btnNew = document.querySelector('#btnNew');
-  const btnTake = document.querySelector('#btnTake');
-  const btnStop = document.querySelector('#btnStop');
+  const btnNew = document.querySelector('#btnNew'),
+    btnTake = document.querySelector('#btnTake'),
+    btnStop = document.querySelector('#btnStop'),
+    // Show cards
+    divCardsPlayers = document.querySelectorAll('.divCards'),
+    // Smalls Array
+    pointsHTML = document.querySelectorAll('small');
 
-  const divPlayerCards = document.querySelector('#playerCards');
-  const divComputerCards = document.querySelector('#computerCards');
+  // This function initializes the game
+  const initializeGame = (numPlayers = 2) => {
+    deck = createDeck();
 
-  // Smalls Array
-  const pointsHTML = document.querySelectorAll('small');
+    playersPoints = [];
+
+    for (let i = 0; i < numPlayers; i++) {
+      playersPoints.push(0);
+    }
+
+    pointsHTML.forEach(elementHTML => (elementHTML.innerText = 0));
+
+    divCardsPlayers.forEach(elementHTML => (elementHTML.innerHTML = ''));
+
+    btnTake.disabled = false;
+    btnStop.disabled = false;
+  };
 
   // New deck
   const createDeck = () => {
+    // Restart deck
+    deck = [];
+
     for (let i = 2; i <= 10; i++) {
       for (const type of types) {
         deck.push(i + type);
@@ -39,17 +57,9 @@
       }
     }
 
-    // Normal deck:
-    // console.log(deck);
-
     // Shuffle deck:
-    deck = _.shuffle(deck);
-    // console.log(deck);
-
-    return deck;
+    return _.shuffle(deck);
   };
-
-  createDeck();
 
   // Take card function
   const takeCard = () => {
@@ -58,9 +68,7 @@
     }
 
     // Remove last card from deck
-    const card = deck.pop();
-
-    return card;
+    return deck.pop();
   };
 
   /** para sumar el valor de la carta. */
@@ -71,27 +79,27 @@
     // "value * 1": Convert string to Number
   };
 
-  // Computer turn
-  const computerTurn = minPoints => {
-    do {
-      const card = takeCard();
+  // turn 0: Player 1, last turn: computer
+  const accumulatePoints = (card, turn) => {
+    playersPoints[turn] = playersPoints[turn] + cardValue(card);
 
-      computerPoints = computerPoints + cardValue(card);
+    pointsHTML[turn].innerText = playersPoints[turn];
 
-      pointsHTML[1].innerText = computerPoints;
+    return playersPoints[turn];
+  };
 
-      // <img class="card" src="assets/cards/2C.png" alt="card-2C">
-      const imgCard = document.createElement('img');
-      imgCard.src = `assets/cards/${card}.png`;
-      imgCard.classList.add('card-custom');
-      imgCard.alt = `card-${card}`;
+  const createCard = (card, turn) => {
+    // <img class="card" src="assets/cards/2C.png" alt="card-2C">
+    const imgCard = document.createElement('img');
+    imgCard.src = `assets/cards/${card}.png`;
+    imgCard.classList.add('card-custom');
+    imgCard.alt = `card-${card}`;
 
-      divComputerCards.append(imgCard);
+    divCardsPlayers[turn].append(imgCard);
+  };
 
-      if (minPoints > 21) {
-        break; // Se sale del ciclo do-while y continua al siguiente codigo de la función despues de este ciclo.
-      }
-    } while (computerPoints < minPoints && minPoints <= 21);
+  const determineWinner = () => {
+    const [minPoints, computerPoints] = playersPoints;
 
     setTimeout(() => {
       if (computerPoints === minPoints) {
@@ -105,21 +113,32 @@
       }
     }, 100);
   };
+  // Computer turn
+  const computerTurn = minPoints => {
+    let computerPoints = 0;
+
+    do {
+      const card = takeCard();
+
+      computerPoints = accumulatePoints(card, playersPoints.length - 1);
+
+      createCard(card, playersPoints.length - 1);
+
+      // if (minPoints > 21) {
+      // break; // Se sale del ciclo do-while y continua al siguiente codigo de la función despues de este ciclo.
+      // }
+    } while (computerPoints < minPoints && minPoints <= 21);
+
+    determineWinner();
+  };
 
   // Events
   btnTake.addEventListener('click', () => {
     const card = takeCard();
 
-    playerPoints = playerPoints + cardValue(card);
-    pointsHTML[0].innerText = playerPoints;
+    const playerPoints = accumulatePoints(card, 0);
 
-    // <img class="card" src="assets/cards/2C.png" alt="card2C" />
-    const imgCard = document.createElement('img');
-    imgCard.src = `assets/cards/${card}.png`;
-    imgCard.classList.add('card-custom');
-    imgCard.alt = `card-${card}`;
-
-    divPlayerCards.append(imgCard);
+    createCard(card, 0);
 
     if (playerPoints > 21) {
       console.warn('Sorry, You Lost');
@@ -139,24 +158,14 @@
     btnTake.disabled = true;
     btnStop.disabled = true;
 
-    computerTurn(playerPoints);
+    computerTurn(playersPoints[0]);
   });
 
-  btnNew.addEventListener('click', () => {
-    console.clear();
-    deck = [];
-    deck = createDeck();
+  // btnNew.addEventListener('click', () => {
+  //   initializeGame();
+  // });
 
-    playerPoints = 0;
-    computerPoints = 0;
-
-    pointsHTML[0].innerText = 0;
-    pointsHTML[1].innerText = 0;
-
-    divComputerCards.innerHTML = '';
-    divPlayerCards.innerHTML = '';
-
-    btnTake.disabled = false;
-    btnStop.disabled = false;
-  });
+  return {
+    newGame: initializeGame,
+  };
 })();

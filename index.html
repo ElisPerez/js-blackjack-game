@@ -26,9 +26,9 @@
         <div id="divButtons" class="col text-center">
           <button id="btnNew" class="btn btn-danger">New Game</button>
 
-          <button id="btnTake" class="btn btn-primary">Take card</button>
+          <button id="btnTake" disabled class="btn btn-primary">Take card</button>
 
-          <button id="btnStop" class="btn btn-primary">Stop</button>
+          <button id="btnStop" disabled class="btn btn-primary">Stop</button>
         </div>
       </div>
     </header>
@@ -37,8 +37,8 @@
       <!-- Player 1 -->
       <div class="row container">
         <div class="col">
-          <h1>Player - <small>0</small></h1>
-          <div id="playerCards">
+          <h1>Player 1 - <small>0</small></h1>
+          <div id="playerCards" class="divCards">
             <!-- <img src="assets/cards/3C.png" alt="card-3C" class="card" /> -->
           </div>
         </div>
@@ -48,7 +48,7 @@
       <div class="row container">
         <div class="col">
           <h1>Computer - <small>0</small></h1>
-          <div id="computerCards">
+          <div id="computerCards" class="divCards">
             <!-- <img src="assets/cards/3C.png" alt="card-3C" class="card" /> -->
           </div>
         </div>
@@ -57,5 +57,11 @@
 
     <script src="assets/js/underscore-min.js"></script>
     <script src="assets/js/game.js"></script>
+
+    <script>
+      document.querySelector('#btnNew').addEventListener('click', () => {
+        myModule.newGame();
+      });
+    </script>
   </body>
 </html>
